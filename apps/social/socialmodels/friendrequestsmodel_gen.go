@@ -61,8 +61,8 @@ func newFriendRequestsModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.
 	}
 }
 
-func (m *defaultFriendRequestsModel)Trans(ctx context.Context,fn func(ctx context.Context,session sqlx.Session)error){
-	m.TransactCtx(ctx,func(ctx context.Context,session sqlx.Session)error{
+func (m *defaultFriendRequestsModel)Trans(ctx context.Context,fn func(ctx context.Context,session sqlx.Session)error)error{
+	return m.TransactCtx(ctx,func(ctx context.Context,session sqlx.Session)error{
 		return fn(ctx,session)
 	})
 }
@@ -93,18 +93,19 @@ func (m *defaultFriendRequestsModel) FindOne(ctx context.Context, id uint64) (*F
 	}
 }
 
-func (m *defaultFriendRequestsModel)FindByReqUidAndUserId(ctx context.Context,rid , uid string)(*FriendRequests,error){
-	query := fmt.Sprintf("select %s from %s where `req_uid` = ? and `user_id` = ?",friendRequestsRows,m.table)
+func (m *defaultFriendRequestsModel) FindByReqUidAndUserId(ctx context.Context, rid, uid string) (*FriendRequests, error) {
+	query := fmt.Sprintf("select %s from %s where `req_uid` = ? and `user_id` = ?", friendRequestsRows, m.table)
 
 	var resp FriendRequests
-	err := m.QueryRowsNoCacheCtx(ctx,&resp,query,rid,uid)
+	err := m.QueryRowNoCacheCtx(ctx, &resp, query, rid, uid)
+
 	switch err {
 	case nil:
-		return &resp,nil
+		return &resp, nil
 	case sqlc.ErrNotFound:
-		return nil,ErrNotFound
+		return nil, ErrNotFound
 	default:
-		return nil,err
+		return nil, err
 	}
 }
 

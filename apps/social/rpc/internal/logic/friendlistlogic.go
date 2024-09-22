@@ -1,7 +1,10 @@
 package logic
 
 import (
+	"OuterIM/pkg/xerr"
 	"context"
+	"github.com/jinzhu/copier"
+	PkgErr "github.com/pkg/errors"
 
 	"OuterIM/apps/social/rpc/internal/svc"
 	"OuterIM/apps/social/rpc/social"
@@ -24,7 +27,15 @@ func NewFriendListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Friend
 }
 
 func (l *FriendListLogic) FriendList(in *social.FriendListReq) (*social.FriendListResp, error) {
-	// todo: add your logic here and delete this line
+	friendList, err := l.svcCtx.ListByUserid(l.ctx, in.UserId)
+	if err != nil {
+		return nil, PkgErr.Wrapf(xerr.NewDBErr(), "find userlist err %v req %v", err, in.UserId)
+	}
 
-	return &social.FriendListResp{}, nil
+	var resp []*social.Friends
+	_ = copier.Copy(&resp, friendList)
+
+	return &social.FriendListResp{
+		List: resp,
+	}, nil
 }

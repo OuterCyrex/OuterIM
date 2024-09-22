@@ -78,6 +78,5 @@ func (l *FriendPutInHandleLogic) FriendPutInHandle(in *social.FriendPutInHandleR
 		return nil
 	},
 	)
-
-	return &social.FriendPutInHandleResp{}, nil
+	return &social.FriendPutInHandleResp{}, err
 }
